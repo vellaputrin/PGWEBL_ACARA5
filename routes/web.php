@@ -23,6 +23,15 @@ Route::post('/polylines', [PolylinesController::class, 'store'])
 Route::post('/polygons', [PolygonsController::class, 'store'])
 ->name('polygons.store');
 
+Route::get('/geojson/points', [PointsController::class, 'geojson'])
+    ->name('geojson.points');
+
+Route::get('/geojson/polylines', [PolylinesController::class, 'geojson'])
+    ->name('geojson.polylines');
+
+Route::get('/geojson/polygons', [PolygonsController::class, 'geojson'])
+    ->name('geojson.polygons');
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

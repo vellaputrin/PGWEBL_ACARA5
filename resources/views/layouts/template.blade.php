@@ -23,7 +23,7 @@
         integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y"
         crossorigin="anonymous"></script>
 
-    @yield('script')
+    @yield('scripts')
 
     @include('components.toast')
 </body>

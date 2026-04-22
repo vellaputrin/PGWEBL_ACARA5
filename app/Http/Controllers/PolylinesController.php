@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\polylinesModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PolylinesController extends Controller
 {
@@ -11,6 +12,33 @@ class PolylinesController extends Controller
     public function __construct()
     {
         $this->polylines = new polylinesModel();
+    }
+
+    public function geojson()
+    {
+    $polylines = $this->polylines->all();
+
+    $features = [];
+
+    foreach ($polylines as $line) {
+
+        $geom = DB::select("SELECT ST_AsGeoJSON('$line->geom') as geojson");
+
+        $features[] = [
+            "type" => "Feature",
+            "geometry" => json_decode($geom[0]->geojson),
+            "properties" => [
+                "name" => $line->name,
+                "description" => $line->description,
+                "created_at" => $line->created_at
+            ]
+        ];
+    }
+
+    return response()->json([
+        "type" => "FeatureCollection",
+        "features" => $features
+    ]);
     }
 
     public function store(Request $request)

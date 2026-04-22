@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\pointsModel;
-
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PointsController extends Controller
 {
@@ -12,6 +12,34 @@ class PointsController extends Controller
     public function __construct()
     {
         $this->points = new pointsModel();
+    }
+
+    public function geojson()
+    {
+    $points = $this->points->all();
+
+    $features = [];
+
+    foreach ($points as $point) {
+
+        // convert WKT -> GeoJSON
+        $geom = DB::select("SELECT ST_AsGeoJSON('$point->geom') as geojson");
+
+        $features[] = [
+            "type" => "Feature",
+            "geometry" => json_decode($geom[0]->geojson),
+            "properties" => [
+                "name" => $point->name,
+                "description" => $point->description,
+                "created_at" => $point->created_at
+            ]
+        ];
+    }
+
+    return response()->json([
+        "type" => "FeatureCollection",
+        "features" => $features
+    ]);
     }
 
     /**
