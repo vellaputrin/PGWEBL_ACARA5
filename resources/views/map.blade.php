@@ -25,7 +25,7 @@
                     <h5 class="modal-title">Input Point</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('points.store') }}" method="post">
+                <form action="{{ route('points.store') }}" method="post" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
@@ -40,6 +40,11 @@
                         <div class="mb-3">
                             <label for="geometry_point" class="form-label">Geometry</label>
                             <textarea class="form-control" id="geometry_point" name="geometry_point" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Image</label>
+                            <input class="form-control" type="file" id="image-point" name="image">
+                            <img id="preview-image-point" class="img-thumbnail" width="400">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -58,7 +63,7 @@
                     <h5 class="modal-title">Input Polyline</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('polylines.store') }}" method="post">
+                <form action="{{ route('polylines.store') }}" method="post" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
@@ -73,6 +78,11 @@
                         <div class="mb-3">
                             <label for="geometry_polyline" class="form-label">Geometry</label>
                             <textarea class="form-control" id="geometry_polyline" name="geometry_polyline" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Image</label>
+                            <input class="form-control" type="file" id="image-polyline" name="image">
+                            <img id="preview-image-polyline" class="img-thumbnail" width="400">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -91,7 +101,7 @@
                     <h5 class="modal-title">Input Polygon</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('polygons.store') }}" method="post">
+                <form action="{{ route('polygons.store') }}" method="post" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
@@ -106,6 +116,11 @@
                         <div class="mb-3">
                             <label for="geometry_polygon" class="form-label">Geometry</label>
                             <textarea class="form-control" id="geometry_polygon" name="geometry_polygon" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Image</label>
+                            <input class="form-control" type="file" id="image-polygon" name="image">
+                            <img id="preview-image-polygon" class="img-thumbnail" width="400">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -213,19 +228,27 @@
             drawnItems.addLayer(layer);
         });
 
-        //Pointa Layer
+        //Points Layer
         var points = L.geoJSON(null, {
             // Style
 
             // onEachFeature
-            onEachFeature: function(feature, layer) {
-                // variable popup content
-                var popup_content = "Nama: " + feature.properties.name + "<br>" +
-                    "Deskripsi: " + feature.properties.description + "<br>" + "Dibuat: " +
-                    feature.properties.created_at;
+            onEachFeature: function (feature, layer) {
 
-                layer.bindPopup(popup_content);
-            },
+            var popup_content =
+                "Nama: " + feature.properties.name + "<br>" +
+                "Deskripsi: " + feature.properties.description + "<br>" +
+                "Dibuat: " + feature.properties.created_at + "<br>";
+
+            // kalau ada gambar
+            if (feature.properties.image) {
+                popup_content +=
+                    "<img src='{{ asset('storage/images') }}/" + feature.properties.image + "' " +
+                    "alt='" + feature.properties.name + "' class='img-thumbnail' width='400'>";
+            }
+
+            layer.bindPopup(popup_content);
+        }
 
         });
 
@@ -242,8 +265,15 @@
             onEachFeature: function(feature, layer) {
                 // variable popup content
                 var popup_content = "Nama: " + feature.properties.name + "<br>" +
-                    "Deskripsi: " + feature.properties.description + "<br>" + "Dibuat: " +
-                    feature.properties.created_at;
+                    "Deskripsi: " + feature.properties.description + "<br>" +
+                    "Dibuat: " + feature.properties.created_at;
+
+            // kalau ada gambar
+            if (feature.properties.image) {
+                popup_content +=
+                    "<img src='{{ asset('storage/images') }}/" + feature.properties.image + "' " +
+                    "alt='" + feature.properties.name + "' class='img-thumbnail' width='400'>";
+            }
 
                 layer.bindPopup(popup_content);
             },
@@ -265,8 +295,15 @@
             onEachFeature: function(feature, layer) {
                 // variable popup content
                 var popup_content = "Nama: " + feature.properties.name + "<br>" +
-                    "Deskripsi: " + feature.properties.description + "<br>" + "Dibuat: " +
-                    feature.properties.created_at;
+                    "Deskripsi: " + feature.properties.description + "<br>" +
+                    "Dibuat: " + feature.properties.created_at;
+
+            // kalau ada gambar
+            if (feature.properties.image) {
+                popup_content +=
+                    "<img src='{{ asset('storage/images') }}/" + feature.properties.image + "' " +
+                    "alt='" + feature.properties.name + "' class='img-thumbnail' width='400'>";
+            }
 
                 layer.bindPopup(popup_content);
             },
@@ -290,5 +327,30 @@
         };
 
         L.control.layers(baseMaps, overlayMaps).addTo(map);
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const setups = [
+                { input: 'image-point', preview: 'preview-image-point' },
+                { input: 'image-polyline', preview: 'preview-image-polyline' },
+                { input: 'image-polygon', preview: 'preview-image-polygon' }
+            ];
+
+            setups.forEach(item => {
+                const inputEl = document.getElementById(item.input);
+                const previewEl = document.getElementById(item.preview);
+
+                if (inputEl && previewEl) {
+                    inputEl.addEventListener('change', function (e) {
+                        const file = e.target.files[0];
+                        if (file) {
+                            previewEl.src = URL.createObjectURL(file);
+                        }
+                    });
+                }
+            });
+
+        });
     </script>
 @endsection
