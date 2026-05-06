@@ -68,5 +68,24 @@ class PolygonsController extends Controller
         disimpan.');
         }
 
+    public function destroy($id)
+    {
+        // mencari file gambar berdasarkan ID polygon
+        $image = $this->polygons->find($id)->image;
+
+        // hapus data ke database
+        if (!$this->polygons->destroy($id)) {
+            return redirect()->route('peta')->with('error', 'Gagal menghapus data polygon.');
+        }
+
+        // hapus file gambar jika ada
+        if ($image && file_exists('./storage/images/' . $image)) {
+            unlink('./storage/images/' . $image);
+        }
+
+        // kembali ke halaman peta
+        return redirect()->route('peta')->with('success', 'Data polygon berhasil dihapus.');
+    }
+
 }
 
